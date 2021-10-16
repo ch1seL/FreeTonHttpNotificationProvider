@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 using ch1seL.TonNet.Abstract;
+using ch1seL.TonNet.Client;
 using ch1seL.TonNet.Client.Models;
 using ch1seL.TonNet.Serialization;
 using MassTransit;
@@ -38,22 +39,27 @@ namespace Notifon.Server.Business.Requests.TonClient {
                     ? await _tonPackageManager.LoadAbi(TransferContract)
                     : await _tonPackageManager.LoadAbi(SafeMultisigWalletContract);
 
-                string text;
-                if (msg.Get<string>("body") == EmptyBody) {
-                    text = "<Empty comment>";
+                if (msg.TryGetProperty("body", out var bodyJson) && bodyJson.GetString() == EmptyBody) {
+                    await context.RespondAsync<FormattedMessage>(new { Text = "<Empty comment>" });
+                    return;
                 }
-                else {
+
+                try {
                     var messageBody = await _tonClient.Abi.DecodeMessage(new ParamsOfDecodeMessage {
                         Abi = abi,
                         Message = msg.Get<string>("boc")
                     }, cancellationToken);
 
-                    text = isInternal
-                        ? messageBody.Value.Get<string>("comment").HexToString()
+                    var text = isInternal
+                               && messageBody.Value.HasValue
+                               && messageBody.Value.Value.TryGetProperty("comment", out var comment)
+                        ? comment.GetString().HexToString()
                         : messageBody.Value.ToString();
-                }
 
-                await context.RespondAsync<FormattedMessage>(new { Text = text });
+                    await context.RespondAsync<FormattedMessage>(new { Text = text });
+                    return;
+                }
+                catch (TonClientException ex) when (ex.Code == (int)AbiErrorCode.InvalidMessage) { }
             }
 
             await context.RespondAsync<DummyResponse>(new { });
