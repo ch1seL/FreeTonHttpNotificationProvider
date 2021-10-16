@@ -23,7 +23,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1634338581778,
+  "iteration": 1634419700215,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -85,9 +85,10 @@
       "pluginVersion": "8.2.1",
       "targets": [
         {
+          "exemplar": true,
           "expr": "rate(process_cpu_seconds_total[5m])",
           "interval": "",
-          "legendFormat": "{{job}}",
+          "legendFormat": "{{job}}-{{instance}}",
           "refId": "A"
         }
       ],
@@ -144,9 +145,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "exemplar": true,
           "expr": "process_working_set_bytes",
           "interval": "",
-          "legendFormat": "{{job}}",
+          "legendFormat": "{{instance}}",
           "refId": "A"
         }
       ],
@@ -464,6 +466,7 @@
       "steppedLine": false,
       "targets": [
         {
+          "exemplar": true,
           "expr": "histogram_quantile(0.95, sum(rate(mt_delivery_duration_seconds_bucket[5m])) by (message_type,le))",
           "interval": "",
           "legendFormat": "{{message_type}}",
@@ -570,9 +573,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "exemplar": true,
           "expr": "rate(mt_publish_total{message_type=~\"[[PublishMessageTypes]]\"}[5m])",
           "interval": "",
-          "legendFormat": "{{message_type}}",
+          "legendFormat": "{{message_type}}-{{instance}}",
           "refId": "A"
         }
       ],
@@ -670,9 +674,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "exemplar": true,
           "expr": "rate(mt_receive_total[5m])",
           "interval": "",
-          "legendFormat": "{{endpoint_address}}",
+          "legendFormat": "{{endpoint_address}}-{{instance}}",
           "refId": "A"
         }
       ],
@@ -767,9 +772,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "exemplar": true,
           "expr": "rate(mt_send_total{message_type=~\"[[SendMessageTypes]]\"}[5m])",
           "interval": "",
-          "legendFormat": "{{message_type}}",
+          "legendFormat": "{{message_type}}-{{instance}}",
           "refId": "A"
         }
       ],
@@ -916,7 +922,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "All",
           "value": "$__all"
         },
@@ -946,7 +952,7 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {
@@ -966,5 +972,5 @@
   "timezone": "",
   "title": "Notifon",
   "uid": "vOtk-UjWz",
-  "version": 2
+  "version": 7
 }
