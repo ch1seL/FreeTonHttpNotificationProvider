@@ -51,10 +51,16 @@ namespace Notifon.Server {
             services.AddHttpClient();
 
             //Firebase messaging
-            services.AddSingleton(FirebaseMessaging.GetMessaging(FirebaseApp.Create(new FirebaseAdmin.AppOptions {
-                Credential = GoogleCredential.FromFile(Path.Combine(Directory.GetCurrentDirectory(), "firebase-key.json"))
-            })));
-
+            var firebaseKeysFile = Path.Combine(Directory.GetCurrentDirectory(), "firebase-key.json");
+            if (File.Exists(firebaseKeysFile)) {
+                services.AddSingleton(FirebaseMessaging.GetMessaging(FirebaseApp.Create(new FirebaseAdmin.AppOptions {
+                    Credential = GoogleCredential.FromFile(firebaseKeysFile)
+                }))); 
+            }
+            else {
+                services.AddSingleton<FirebaseMessaging>(_=>null);
+            }
+            
             // add masstransit with rabbit if configured else use in-memory bus
             services.AddMassTransit(Configuration.ContainsRabbitMqOptions());
 
