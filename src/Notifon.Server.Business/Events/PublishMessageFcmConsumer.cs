@@ -21,9 +21,10 @@ namespace Notifon.Server.Business.Events {
         public async Task Consume(ConsumeContext<PublishMessage> context) {
             var contextMessage = context.Message;
             if (contextMessage.EndpointType != EndpointType.Fcm) return;
+            if (_firebaseMessaging == null)
+                throw new NoFirebaseMessagingException("No Firebase Messaging Instance. Make sure that file firebase-key.json exists");
 
             var cancellationToken = context.CancellationToken;
-
             var endpoint = FcmEndpoint.FromPublishMessage(contextMessage);
 
             const string title = "Free TON Notification";
@@ -34,8 +35,6 @@ namespace Notifon.Server.Business.Events {
                 },
                 Token = endpoint.Token
             };
-            if (_firebaseMessaging == null)
-                throw new NoFirebaseMessagingException("No Firebase Messaging Instance. Make sure that file firebase-key.json exists");
             _logger.LogTrace("FCM Message {@Message}", msg);
             await _firebaseMessaging.SendAsync(msg, cancellationToken);
         }
