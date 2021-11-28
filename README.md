@@ -57,7 +57,7 @@ Kafka__Topic=YOUR_TOPIC
 
 > 💡 Uses an in-memory queue and Sqlite database. So the processing state is not saved on disk, and not committed Kafka messages can be processed repeatedly after restarting
 
-- Make sure that .Net 5.0 is installed (https://dotnet.microsoft.com/download)
+- Make sure that .Net 6.0 is installed (https://dotnet.microsoft.com/download)
 - Download or clone repo https://github.com/ton-actions/free-ton-http-notification-provider.git
 - Go to the repository directory and create [minimal .env](#env) file
 - Exec `dotnet run --project .\src\Notifon.Server --urls=http://localhost:8080/`
@@ -188,7 +188,7 @@ Create and mount file with your app config and vapidKey `firebase-config.json`:
 
 ## Deployment
 
-- Make sure that .Net 5.0 is installed (https://dotnet.microsoft.com/download)
+- Make sure that .Net 6.0 is installed (https://dotnet.microsoft.com/download)
 - Make sure you have ssh access to the server and rsync is installed
 - Create [minimal .env](#env) file on server app directory
 - Edit Server and ServerPath properties in Notifon.Deploy.proj or pass them as arguments
