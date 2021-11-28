@@ -35,8 +35,7 @@
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
             var responseMessage = await HttpClient.GetAsync("/grafana/123123", cts.Token);
             return (int)responseMessage.StatusCode == 404;
-        }
-        catch {
+        } catch {
             return false;
         }
     }

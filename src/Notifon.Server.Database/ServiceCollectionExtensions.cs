@@ -2,11 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Notifon.Server.Database {
-    public static class ServiceCollectionExtensions {
-        public static IServiceCollection AddDatabase(this IServiceCollection services,
-            string postgreSqlConnectionString) {
-            services.AddDbContextFactory<ServerDbContext>(builder => {
+namespace Notifon.Server.Database;
+
+public static class ServiceCollectionExtensions {
+    public static IServiceCollection AddDatabase(this IServiceCollection services,
+                                                 string postgreSqlConnectionString) {
+        services.AddDbContextFactory<ServerDbContext>(builder => {
                     if (postgreSqlConnectionString != null) {
                         builder.UseNpgsql(postgreSqlConnectionString);
                         return;
@@ -17,16 +18,17 @@ namespace Notifon.Server.Database {
                 .AddDbContext<ServerDbContext>()
                 .AddHealthChecks()
                 .AddDbContextCheck<ServerDbContext>();
-            return services;
+        return services;
+    }
+
+    private static void UseSqlLite(DbContextOptionsBuilder options) {
+        var path = Directory.GetCurrentDirectory();
+        var appData = Path.Join(path, "App_Data");
+        if (!Directory.Exists(appData)) {
+            Directory.CreateDirectory(appData);
         }
 
-        private static void UseSqlLite(DbContextOptionsBuilder options) {
-            var path = Directory.GetCurrentDirectory();
-            var appData = Path.Join(path, "App_Data");
-            if (!Directory.Exists(appData)) Directory.CreateDirectory(appData);
-
-            var dbPath = Path.Join(appData, "app.db");
-            options.UseSqlite($"Data Source={dbPath}");
-        }
+        var dbPath = Path.Join(appData, "app.db");
+        options.UseSqlite($"Data Source={dbPath}");
     }
 }

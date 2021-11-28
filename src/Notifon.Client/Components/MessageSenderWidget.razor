@@ -119,14 +119,13 @@
     private async Task SaveDataMethod() {
         if (SaveDataChecked) {
             await Storage.SetItemAsync(StorageDataKey,
-                new FormData {
-                    Phrase = PhraseField.Value,
-                    Recipient = RecipientField.Value,
-                    Message = MessageField.Value,
-                    SaveData = SaveDataChecked
-                });
-        }
-        else {
+                                       new FormData {
+                                           Phrase = PhraseField.Value,
+                                           Recipient = RecipientField.Value,
+                                           Message = MessageField.Value,
+                                           SaveData = SaveDataChecked
+                                       });
+        } else {
             await Storage.RemoveItemAsync(StorageDataKey);
         }
     }

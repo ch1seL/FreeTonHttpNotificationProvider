@@ -6,30 +6,30 @@ using MassTransit;
 using Notifon.Server.Business.Models;
 using Notifon.Server.Utils;
 
-namespace Notifon.Server.Business.Requests.TonClient {
-    public class DecryptEncryptedMessageConsumer : IConsumer<DecryptEncryptedMessage> {
-        private const string ServerPublicKey = "a36bf515ee8de6b79d30b294bbe7162f5e2a45b95ea97e4baebab8873492ee43";
+namespace Notifon.Server.Business.Requests.TonClient;
 
-        private readonly ITonClient _tonClient;
+public class DecryptEncryptedMessageConsumer : IConsumer<DecryptEncryptedMessage> {
+    private const string ServerPublicKey = "a36bf515ee8de6b79d30b294bbe7162f5e2a45b95ea97e4baebab8873492ee43";
 
-        public DecryptEncryptedMessageConsumer(ITonClient tonClient) {
-            _tonClient = tonClient;
-        }
+    private readonly ITonClient _tonClient;
 
-        public async Task Consume(ConsumeContext<DecryptEncryptedMessage> context) {
-            var encryptedMessage = context.Message.EncryptedMessage;
-            var secretKey = context.Message.SecretKey;
+    public DecryptEncryptedMessageConsumer(ITonClient tonClient) {
+        _tonClient = tonClient;
+    }
 
-            var result = await _tonClient.Crypto.NaclBoxOpen(new ParamsOfNaclBoxOpen {
-                Encrypted = encryptedMessage.Message,
-                Nonce = Convert.FromBase64String(encryptedMessage.Nonce).ToHexString(),
-                Secret = secretKey,
-                TheirPublic = ServerPublicKey
-            });
+    public async Task Consume(ConsumeContext<DecryptEncryptedMessage> context) {
+        var encryptedMessage = context.Message.EncryptedMessage;
+        var secretKey = context.Message.SecretKey;
 
-            await context.RespondAsync(new DecryptedMessage {
-                Text = result.Decrypted.StringFromBase64()
-            });
-        }
+        var result = await _tonClient.Crypto.NaclBoxOpen(new ParamsOfNaclBoxOpen {
+            Encrypted = encryptedMessage.Message,
+            Nonce = Convert.FromBase64String(encryptedMessage.Nonce).ToHexString(),
+            Secret = secretKey,
+            TheirPublic = ServerPublicKey
+        });
+
+        await context.RespondAsync(new DecryptedMessage {
+            Text = result.Decrypted.StringFromBase64()
+        });
     }
 }

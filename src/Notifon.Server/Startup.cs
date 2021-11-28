@@ -21,101 +21,99 @@ using Prometheus;
 using Serilog;
 using AppOptions = Notifon.Server.Configuration.Options.AppOptions;
 
-namespace Notifon.Server {
-    public class Startup {
-        public Startup(IConfiguration configuration) {
-            Configuration = configuration;
+namespace Notifon.Server;
+
+public class Startup {
+    public Startup(IConfiguration configuration) {
+        Configuration = configuration;
+    }
+
+    public IConfiguration Configuration { get; }
+
+    // This method gets called by the runtime. Use this method to add services to the container.
+    // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+    public void ConfigureServices(IServiceCollection services) {
+        // configure asp net
+        services.AddControllersWithViews(options => { options.InputFormatters.Insert(options.InputFormatters.Count, new TextPlainInputFormatter()); });
+        services.AddRazorPages();
+        services.AddSwaggerDocument(settings => { settings.Title = Configuration.GetSection("App").Get<AppOptions>().Name; });
+        services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
+        services.AddCors(o => o.AddPolicy("SubmitClient", builder => builder.AllowAnyOrigin()));
+
+        // add configuration options
+        services.ConfigureOptions(Configuration);
+
+        //Menu helper
+        services.AddSingleton<MenuHelper>();
+
+        // http client for sending http hooks
+        services.AddHttpClient();
+
+        //Firebase messaging
+        var firebaseKeysFile = Path.Combine(Directory.GetCurrentDirectory(), "firebase-key.json");
+        if (File.Exists(firebaseKeysFile)) {
+            services.AddSingleton(FirebaseMessaging.GetMessaging(FirebaseApp.Create(new FirebaseAdmin.AppOptions {
+                Credential = GoogleCredential.FromFile(firebaseKeysFile)
+            })));
+        } else {
+            services.AddSingleton<FirebaseMessaging>(_ => null);
         }
 
-        public IConfiguration Configuration { get; }
+        // add masstransit with rabbit if configured else use in-memory bus
+        services.AddMassTransit(Configuration.ContainsRabbitMqOptions());
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services) {
-            // configure asp net
-            services.AddControllersWithViews(options => {
-                options.InputFormatters.Insert(options.InputFormatters.Count, new TextPlainInputFormatter());
-            });
-            services.AddRazorPages();
-            services.AddSwaggerDocument(settings => { settings.Title = Configuration.GetSection("App").Get<AppOptions>().Name; });
-            services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
-            services.AddCors(o => o.AddPolicy("SubmitClient", builder => builder.AllowAnyOrigin()));
+        // setup PostgreSql database if connections string is defined else SQLLite 
+        services.AddDatabase(Configuration.GetPostgreSqlConnectionString());
 
-            // add configuration options
-            services.ConfigureOptions(Configuration);
+        // setup redis distributed lock and cache if redis options defined else in-memory
+        services.AddDistributedLockAndCache(Configuration.ContainsRedisOptions());
 
-            //Menu helper
-            services.AddSingleton<MenuHelper>();
+        // signalr hub
+        services.AddSignalR();
+        services.AddSingleton<IUserIdProvider, ByHashUserIdProvider>();
 
-            // http client for sending http hooks
-            services.AddHttpClient();
+        // add free ton client 
+        services.AddTonClient();
+    }
 
-            //Firebase messaging
-            var firebaseKeysFile = Path.Combine(Directory.GetCurrentDirectory(), "firebase-key.json");
-            if (File.Exists(firebaseKeysFile)) {
-                services.AddSingleton(FirebaseMessaging.GetMessaging(FirebaseApp.Create(new FirebaseAdmin.AppOptions {
-                    Credential = GoogleCredential.FromFile(firebaseKeysFile)
-                }))); 
-            }
-            else {
-                services.AddSingleton<FirebaseMessaging>(_=>null);
-            }
-            
-            // add masstransit with rabbit if configured else use in-memory bus
-            services.AddMassTransit(Configuration.ContainsRabbitMqOptions());
-
-            // setup PostgreSql database if connections string is defined else SQLLite 
-            services.AddDatabase(Configuration.GetPostgreSqlConnectionString());
-
-            // setup redis distributed lock and cache if redis options defined else in-memory
-            services.AddDistributedLockAndCache(Configuration.ContainsRedisOptions());
-
-            // signalr hub
-            services.AddSignalR();
-            services.AddSingleton<IUserIdProvider, ByHashUserIdProvider>();
-
-            // add free ton client 
-            services.AddTonClient();
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
+        if (env.IsDevelopment()) {
+            app.UseDeveloperExceptionPage();
+            app.UseWebAssemblyDebugging();
+        } else {
+            app.UseExceptionHandler("/Error");
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
-            if (env.IsDevelopment()) {
-                app.UseDeveloperExceptionPage();
-                app.UseWebAssemblyDebugging();
-            }
-            else {
-                app.UseExceptionHandler("/Error");
-            }
+        app.UseSerilogRequestLogging();
 
-            app.UseSerilogRequestLogging();
+        app.UseOpenApi(settings => {
+            settings.PostProcess = (document, request) => {
+                if (!request.Headers.TryGetValue("X-Scheme", out var scheme) ||
+                    !Enum.TryParse(scheme, true, out OpenApiSchema openApiSchema)) {
+                    return;
+                }
+                document.Schemes.Clear();
+                document.Schemes.Add(openApiSchema);
+            };
+        });
+        app.UseSwaggerUi3();
 
-            app.UseOpenApi(settings => {
-                settings.PostProcess = (document, request) => {
-                    if (!request.Headers.TryGetValue("X-Scheme", out var scheme) ||
-                        !Enum.TryParse(scheme, true, out OpenApiSchema openApiSchema)) return;
-                    document.Schemes.Clear();
-                    document.Schemes.Add(openApiSchema);
-                };
-            });
-            app.UseSwaggerUi3();
+        app.UseBlazorFrameworkFiles();
+        app.UseStaticFiles();
 
-            app.UseBlazorFrameworkFiles();
-            app.UseStaticFiles();
-
-            app.UseRouting()
-                .UseCors()
-                .UseEndpoints(endpoints => {
-                    endpoints.MapRazorPages();
-                    endpoints.MapControllers();
-                    endpoints.MapHub<SignalRHub>("/signalr");
-                    endpoints.MapFallbackToFile("index.html");
-                    endpoints.MapHealthChecks("/health/ready", new HealthCheckOptions {
-                        Predicate = check => check.Tags.Contains("ready")
-                    });
-                    endpoints.MapHealthChecks("/health/live", new HealthCheckOptions());
-                    endpoints.MapMetrics();
-                });
-        }
+        app.UseRouting()
+           .UseCors()
+           .UseEndpoints(endpoints => {
+               endpoints.MapRazorPages();
+               endpoints.MapControllers();
+               endpoints.MapHub<SignalRHub>("/signalr");
+               endpoints.MapFallbackToFile("index.html");
+               endpoints.MapHealthChecks("/health/ready", new HealthCheckOptions {
+                   Predicate = check => check.Tags.Contains("ready")
+               });
+               endpoints.MapHealthChecks("/health/live", new HealthCheckOptions());
+               endpoints.MapMetrics();
+           });
     }
 }
