@@ -1,7 +1,7 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:5.0 AS sdk
+﻿FROM mcr.microsoft.com/dotnet/sdk:6.0 AS sdk
 WORKDIR /src
 
-FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
 WORKDIR /app
 ENV ASPNETCORE_ENVIRONMENT=Development
 LABEL org.opencontainers.image.source = "https://github.com/ton-actions/free-ton-http-notification-provider"
