@@ -1,7 +1,7 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:5.0 AS sdk
+﻿FROM mcr.microsoft.com/dotnet/sdk:6.0 AS sdk
 WORKDIR /src
 
-FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
 WORKDIR /app
 ENV ASPNETCORE_ENVIRONMENT=Development
 LABEL org.opencontainers.image.source = "https://github.com/ton-actions/free-ton-http-notification-provider"
@@ -27,8 +27,7 @@ COPY ["src/Notifon.Server.Redis/Notifon.Server.Redis.csproj", "/src/Notifon.Serv
 COPY ["src/Notifon.Server.SignalR/Notifon.Server.SignalR.csproj", "/src/Notifon.Server.SignalR/Notifon.Server.SignalR.csproj"]
 COPY ["src/Notifon.Server.Utils/Notifon.Server.Utils.csproj", "/src/Notifon.Server.Utils/Notifon.Server.Utils.csproj"]
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build-client
-WORKDIR /src
+FROM sdk AS build-client
 COPY --from=csproj-client / /
 RUN dotnet restore Notifon.Client
 COPY src/Notifon.Client Notifon.Client
@@ -36,8 +35,7 @@ COPY src/Notifon.Client.Storage Notifon.Client.Storage
 RUN dotnet build -c Release Notifon.Client
 RUN dotnet publish -c Release --no-build -o /publish Notifon.Client
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build-server
-WORKDIR /src
+FROM sdk AS build-server
 COPY --from=csproj-server / /
 RUN dotnet restore Notifon.Server
 COPY src/Notifon.Server Notifon.Server
@@ -54,7 +52,6 @@ RUN dotnet build -c Release Notifon.Server
 RUN dotnet publish -c Release --no-build -o /publish Notifon.Server
 
 FROM runtime AS final
-WORKDIR /app
 COPY --from=build-client /publish .
 COPY --from=build-server /publish .
 ENTRYPOINT ["dotnet", "Notifon.Server.dll"]
