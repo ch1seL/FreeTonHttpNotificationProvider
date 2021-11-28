@@ -6,63 +6,58 @@ using ch1seL.TonNet.Client;
 using ch1seL.TonNet.Client.Models;
 using ch1seL.TonNet.Serialization;
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using Notifon.Server.Business.Models;
 using Notifon.Server.Utils;
 
-namespace Notifon.Server.Business.Requests.TonClient {
-    public class FormatDecryptedMessageConsumer : IConsumer<FormatDecryptedMessage> {
-        private const string TransferContract = "transfer";
-        private const string SafeMultisigWalletContract = "SafeMultisigWallet";
-        private const string EmptyBody = "te6ccgEBAQEAAgAAAA==";
-        private readonly ILogger<FormatDecryptedMessageConsumer> _logger;
-        private readonly ITonClient _tonClient;
-        private readonly ITonPackageManager _tonPackageManager;
+namespace Notifon.Server.Business.Requests.TonClient;
 
-        public FormatDecryptedMessageConsumer(ITonClient tonClient, ITonPackageManager tonPackageManager,
-            ILogger<FormatDecryptedMessageConsumer> logger) {
-            _tonClient = tonClient;
-            _tonPackageManager = tonPackageManager;
-            _logger = logger;
-        }
+public class FormatDecryptedMessageConsumer : IConsumer<FormatDecryptedMessage> {
+    private const string TransferContract = "transfer";
+    private const string SafeMultisigWalletContract = "SafeMultisigWallet";
+    private const string EmptyBody = "te6ccgEBAQEAAgAAAA==";
+    private readonly ITonClient _tonClient;
+    private readonly ITonPackageManager _tonPackageManager;
 
-        public async Task Consume(ConsumeContext<FormatDecryptedMessage> context) {
-            var message = context.Message.DecryptedMessage;
-            var format = context.Message.Format;
-            var cancellationToken = context.CancellationToken;
+    public FormatDecryptedMessageConsumer(ITonClient tonClient, ITonPackageManager tonPackageManager) {
+        _tonClient = tonClient;
+        _tonPackageManager = tonPackageManager;
+    }
 
-            if (format.Equals("body", StringComparison.OrdinalIgnoreCase)) {
-                var msg = JsonDocument.Parse(message.Text).RootElement;
-                var isInternal = msg.Get<int>("msg_type") == 0;
+    public async Task Consume(ConsumeContext<FormatDecryptedMessage> context) {
+        var message = context.Message.DecryptedMessage;
+        var format = context.Message.Format;
+        var cancellationToken = context.CancellationToken;
 
-                var abi = isInternal
-                    ? await _tonPackageManager.LoadAbi(TransferContract)
-                    : await _tonPackageManager.LoadAbi(SafeMultisigWalletContract);
+        if (format.Equals("body", StringComparison.OrdinalIgnoreCase)) {
+            var msg = JsonDocument.Parse(message.Text).RootElement;
+            var isInternal = msg.Get<int>("msg_type") == 0;
 
-                if (msg.TryGetProperty("body", out var bodyJson) && bodyJson.GetString() == EmptyBody) {
-                    await context.RespondAsync<FormattedMessage>(new { Text = "<Empty comment>" });
-                    return;
-                }
+            var abi = isInternal
+                          ? await _tonPackageManager.LoadAbi(TransferContract)
+                          : await _tonPackageManager.LoadAbi(SafeMultisigWalletContract);
 
-                try {
-                    var messageBody = await _tonClient.Abi.DecodeMessage(new ParamsOfDecodeMessage {
-                        Abi = abi,
-                        Message = msg.Get<string>("boc")
-                    }, cancellationToken);
-
-                    var text = isInternal
-                               && messageBody.Value.HasValue
-                               && messageBody.Value.Value.TryGetProperty("comment", out var comment)
-                        ? comment.GetString().HexToString()
-                        : messageBody.Value.ToString();
-
-                    await context.RespondAsync<FormattedMessage>(new { Text = text });
-                    return;
-                }
-                catch (TonClientException ex) when (ex.Code == (int)AbiErrorCode.InvalidMessage) { }
+            if (msg.TryGetProperty("body", out var bodyJson) && bodyJson.GetString() == EmptyBody) {
+                await context.RespondAsync<FormattedMessage>(new { Text = "<Empty comment>" });
+                return;
             }
 
-            await context.RespondAsync<DummyResponse>(new { });
+            try {
+                var messageBody = await _tonClient.Abi.DecodeMessage(new ParamsOfDecodeMessage {
+                    Abi = abi,
+                    Message = msg.Get<string>("boc")
+                }, cancellationToken);
+
+                var text = isInternal
+                           && messageBody.Value.HasValue
+                           && messageBody.Value.Value.TryGetProperty("comment", out var comment)
+                               ? comment.GetString().HexToString()
+                               : messageBody.Value.ToString();
+
+                await context.RespondAsync<FormattedMessage>(new { Text = text });
+                return;
+            } catch (TonClientException ex) when (ex.Code == (int)AbiErrorCode.InvalidMessage) { }
         }
+
+        await context.RespondAsync<DummyResponse>(new { });
     }
 }

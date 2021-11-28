@@ -1,15 +1,15 @@
 ﻿using Notifon.Server.Models;
 
-namespace Notifon.Server.Business.Models {
-    public class HttpEndpoint {
-        private HttpEndpoint(string url) {
-            Url = url;
-        }
+namespace Notifon.Server.Business.Models;
 
-        public string Url { get; }
+public class HttpEndpoint {
+    private HttpEndpoint(string url) {
+        Url = url;
+    }
 
-        public static HttpEndpoint FromPublishMessage(PublishMessage @base) {
-            return new HttpEndpoint(@base.Endpoint);
-        }
+    public string Url { get; }
+
+    public static HttpEndpoint FromPublishMessage(PublishMessage @base) {
+        return new HttpEndpoint(@base.Endpoint);
     }
 }

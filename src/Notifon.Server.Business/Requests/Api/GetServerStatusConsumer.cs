@@ -4,28 +4,28 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Notifon.Server.Database;
 
-namespace Notifon.Server.Business.Requests.Api {
-    public class GetServerStatusConsumer : IConsumer<GetServerStatus> {
-        private readonly ServerDbContext _serverDbContext;
-        private readonly ITonClient _tonClient;
+namespace Notifon.Server.Business.Requests.Api;
 
-        public GetServerStatusConsumer(ServerDbContext serverDbContext, ITonClient tonClient) {
-            _serverDbContext = serverDbContext;
-            _tonClient = tonClient;
-        }
+public class GetServerStatusConsumer : IConsumer<GetServerStatus> {
+    private readonly ServerDbContext _serverDbContext;
+    private readonly ITonClient _tonClient;
 
-        public async Task Consume(ConsumeContext<GetServerStatus> context) {
-            var cancellationToken = context.CancellationToken;
+    public GetServerStatusConsumer(ServerDbContext serverDbContext, ITonClient tonClient) {
+        _serverDbContext = serverDbContext;
+        _tonClient = tonClient;
+    }
 
-            var userCount = await _serverDbContext.Users.CountAsync(cancellationToken);
-            var endpointCount = await _serverDbContext.Endpoints.CountAsync(cancellationToken);
-            var tonEndpoints = await _tonClient.Net.GetEndpoints(cancellationToken);
+    public async Task Consume(ConsumeContext<GetServerStatus> context) {
+        var cancellationToken = context.CancellationToken;
 
-            await context.RespondAsync<GetServerStatusResult>(new {
-                UserCount = userCount,
-                EndpointCount = endpointCount,
-                TonEndpoints = tonEndpoints.Endpoints
-            });
-        }
+        var userCount = await _serverDbContext.Users.CountAsync(cancellationToken);
+        var endpointCount = await _serverDbContext.Endpoints.CountAsync(cancellationToken);
+        var tonEndpoints = await _tonClient.Net.GetEndpoints(cancellationToken);
+
+        await context.RespondAsync<GetServerStatusResult>(new {
+            UserCount = userCount,
+            EndpointCount = endpointCount,
+            TonEndpoints = tonEndpoints.Endpoints
+        });
     }
 }

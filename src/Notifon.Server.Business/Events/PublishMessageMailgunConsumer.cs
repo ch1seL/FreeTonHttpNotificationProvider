@@ -13,52 +13,53 @@ using Notifon.Server.Business.Models;
 using Notifon.Server.Configuration.Options;
 using Notifon.Server.Models;
 
-namespace Notifon.Server.Business.Events {
-    public class PublishMessageMailgunConsumer : IConsumer<PublishMessage> {
-        private const string ApiUrl = "https://api.mailgun.net/v3";
-        private readonly HttpClient _httpClient;
-        private readonly ILogger<PublishMessageMailgunConsumer> _logger;
-        private readonly IOptions<MailGunOptions> _mailGunOptionsAccessor;
+namespace Notifon.Server.Business.Events;
 
-        public PublishMessageMailgunConsumer(HttpClient httpClient, IOptions<MailGunOptions> mailGunOptionsAccessor,
-            ILogger<PublishMessageMailgunConsumer> logger) {
-            _httpClient = httpClient;
-            _mailGunOptionsAccessor = mailGunOptionsAccessor;
-            _logger = logger;
+public class PublishMessageMailgunConsumer : IConsumer<PublishMessage> {
+    private const string ApiUrl = "https://api.mailgun.net/v3";
+    private readonly HttpClient _httpClient;
+    private readonly ILogger<PublishMessageMailgunConsumer> _logger;
+    private readonly IOptions<MailGunOptions> _mailGunOptionsAccessor;
+
+    public PublishMessageMailgunConsumer(HttpClient httpClient, IOptions<MailGunOptions> mailGunOptionsAccessor,
+                                         ILogger<PublishMessageMailgunConsumer> logger) {
+        _httpClient = httpClient;
+        _mailGunOptionsAccessor = mailGunOptionsAccessor;
+        _logger = logger;
+    }
+
+    public async Task Consume(ConsumeContext<PublishMessage> context) {
+        if (context.Message.EndpointType != EndpointType.Mailgun) {
+            return;
         }
 
-        public async Task Consume(ConsumeContext<PublishMessage> context) {
-            if (context.Message.EndpointType != EndpointType.Mailgun) return;
+        var cancellationToken = context.CancellationToken;
+        var parameters = MailgunParameters.Create(context.Message, () => _mailGunOptionsAccessor.Value);
 
-            var cancellationToken = context.CancellationToken;
-            var parameters = MailgunParameters.Create(context.Message, () => _mailGunOptionsAccessor.Value);
+        var url = Url.Combine(ApiUrl, parameters.Domain, "messages");
 
-            var url = Url.Combine(ApiUrl, parameters.Domain, "messages");
+        var request = new FormUrlEncodedContent(new[] {
+            KeyValuePair.Create("to", parameters.To),
+            KeyValuePair.Create("from", parameters.From),
+            KeyValuePair.Create("subject", parameters.Subject),
+            KeyValuePair.Create("text", parameters.Text)
+        });
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Basic.ToString(),
+                                                                                        Convert.ToBase64String(Encoding.ASCII.GetBytes($"api:{parameters.ApiKey}")));
 
-            var request = new FormUrlEncodedContent(new[] {
-                KeyValuePair.Create("to", parameters.To),
-                KeyValuePair.Create("from", parameters.From),
-                KeyValuePair.Create("subject", parameters.Subject),
-                KeyValuePair.Create("text", parameters.Text)
-            });
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthenticationSchemes.Basic.ToString(),
-                Convert.ToBase64String(Encoding.ASCII.GetBytes($"api:{parameters.ApiKey}")));
-
-            var response = await _httpClient.PostAsync(url, request, cancellationToken);
-            try {
-                response.EnsureSuccessStatusCode();
-            }
-            catch (HttpRequestException) {
-                if (response.Content.Headers.ContentLength > 0) {
-                    var result = await response.Content.ReadAsStringAsync(cancellationToken);
-                    _logger.LogWarning("Mail sending {Result}", result);
-                }
+        var response = await _httpClient.PostAsync(url, request, cancellationToken);
+        try {
+            response.EnsureSuccessStatusCode();
+        } catch (HttpRequestException) {
+            if (response.Content.Headers.ContentLength > 0) {
+                var result = await response.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogWarning("Mail sending {Result}", result);
             }
         }
     }
+}
 
-    public class PublishMessageMailgunConsumerDefinition : PublishMessageConsumerDefinitionBase<PublishMessageMailgunConsumer> {
-        public PublishMessageMailgunConsumerDefinition(IOptions<RetryPolicyOptions> retryPolicyOptionsAccessor) :
-            base(retryPolicyOptionsAccessor) { }
-    }
+public class PublishMessageMailgunConsumerDefinition : PublishMessageConsumerDefinitionBase<PublishMessageMailgunConsumer> {
+    public PublishMessageMailgunConsumerDefinition(IOptions<RetryPolicyOptions> retryPolicyOptionsAccessor) :
+        base(retryPolicyOptionsAccessor) { }
 }

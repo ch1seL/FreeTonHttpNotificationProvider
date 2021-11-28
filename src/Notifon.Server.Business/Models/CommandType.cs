@@ -1,24 +1,24 @@
-﻿namespace Notifon.Server.Business.Models {
-    public enum CommandType {
-        [CommandDescription(null, "[endpoint] [parameters]' register endpoint or update parameters")]
-        AddEndpoint,
+﻿namespace Notifon.Server.Business.Models;
 
-        [CommandDescription("help", "'{command}' show this tip")]
-        Help,
+public enum CommandType {
+    [CommandDescription(null, "[endpoint] [parameters]' register endpoint or update parameters")]
+    AddEndpoint,
 
-        [CommandDescription("list", "'{command}' get registered endpoints")]
-        ListEndpoints,
+    [CommandDescription("help", "'{command}' show this tip")]
+    Help,
 
-        [CommandDescription("remove", "'{command} [endpoint]' unregister endpoint")]
-        RemoveEndpoint,
+    [CommandDescription("list", "'{command}' get registered endpoints")]
+    ListEndpoints,
 
-        [CommandDescription("clear", "'{command}' unregister all endpoints")]
-        ClearEndpoints,
+    [CommandDescription("remove", "'{command} [endpoint]' unregister endpoint")]
+    RemoveEndpoint,
 
-        [CommandDescription("secret", "'{command} [SECRET_KEY|get|remove]' set decryption key, use remove to delete")]
-        Secret,
+    [CommandDescription("clear", "'{command}' unregister all endpoints")]
+    ClearEndpoints,
 
-        [CommandDescription("test", "'{command} [parameters]' add test HTTP endpoint")]
-        Test
-    }
+    [CommandDescription("secret", "'{command} [SECRET_KEY|get|remove]' set decryption key, use remove to delete")]
+    Secret,
+
+    [CommandDescription("test", "'{command} [parameters]' add test HTTP endpoint")]
+    Test
 }

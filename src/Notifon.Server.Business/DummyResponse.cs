@@ -1,3 +1,3 @@
-﻿namespace Notifon.Server.Business {
-    public interface DummyResponse { }
-}
+﻿namespace Notifon.Server.Business;
+
+public interface DummyResponse { }
