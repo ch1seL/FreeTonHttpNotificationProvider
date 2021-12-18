@@ -30,6 +30,7 @@ services:
     volumes:
       - ./nginx/conf/nginx.conf:/opt/bitnami/nginx/conf/nginx.conf
       - ./nginx/ssl:/opt/bitnami/nginx/ssl
+      - ./nginx/acme:/opt/bitnami/nginx/acme
     restart: unless-stopped
   prometheus:
     image: bitnami/prometheus:2.30.3-debian-10-r3
