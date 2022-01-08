@@ -1,4 +1,6 @@
-﻿<MudItem xs="12" md="10">
+﻿@using Notifon.Client.MessageSender
+@using System.Threading
+<MudItem xs="12" md="10">
     <MudText Typo="@Typo.h6" Class="ml-5" GutterBottom="@true" Style="white-space: nowrap">Message sender</MudText>
     <MudCard Style="max-width: 700px" Outlined="true" Elevation="0">
         <MudCardContent>
@@ -34,7 +36,7 @@
 @code {
 
     [Inject]
-    IApiFreeTonClient FreeTon { get; set; }
+    IEverscaleMessageSender EverscaleMessageSender { get; set; }
 
     [Inject]
     ISnackbar Snackbar { get; set; }
@@ -83,7 +85,7 @@
             await SetFieldValue(PhraseField, phrase);
         }
 
-        var deployResult = await FreeTon.DeployAsync(new FreeTonDeploy { Phrase = phrase });
+        var deployResult = await EverscaleMessageSender.Deploy(new DeployRequest { Phrase = phrase }, CancellationToken.None);
         if (!deployResult.Success) return deployResult.Error;
         AddressByPhrase = $"Your address: {deployResult.Address}";
         Balance = deployResult.Balance;
@@ -96,11 +98,11 @@
         await Form.Validate();
         if (Form.IsValid) {
             await SaveDataMethod();
-            var sendResult = await FreeTon.SendMessageAsync(new FreeTonSendMessage {
+            var sendResult = await EverscaleMessageSender.SendMessage(new SendMessageRequest {
                 Message = MessageField.Value,
                 Phrase = PhraseField.Value,
                 Recipient = RecipientField.Value
-            });
+            }, CancellationToken.None);
 
             if (!sendResult.Success) {
                 await DialogService.ShowMessageBox("Error", sendResult.Error, options: new DialogOptions { CloseButton = true, FullWidth = true });

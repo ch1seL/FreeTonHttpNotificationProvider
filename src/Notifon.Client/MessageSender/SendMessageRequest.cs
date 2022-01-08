@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Notifon.Server.Business.Requests.TonClient;
+namespace Notifon.Client.MessageSender;
 
-public class FreeTonSendMessage {
+internal class SendMessageRequest {
     [Required]
     public string Phrase { get; init; }
 

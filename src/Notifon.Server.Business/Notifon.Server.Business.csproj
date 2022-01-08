@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <PackageReference Include="ch1seL.TonNet.Abstract" Version="1.26.0" />
-        <PackageReference Include="ch1seL.TonNet.Serialization" Version="1.26.0" />
+        <PackageReference Include="ch1seL.TonNet.Abstract" Version="1.28.0.1" />
+        <PackageReference Include="ch1seL.TonNet.Serialization" Version="1.28.0.1" />
         <PackageReference Include="FirebaseAdmin" Version="2.2.0" />
         <PackageReference Include="Flurl" Version="3.0.2" />
         <PackageReference Include="MassTransit" Version="7.2.4" />

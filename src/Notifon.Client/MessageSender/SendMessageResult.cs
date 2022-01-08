@@ -1,6 +1,6 @@
-﻿namespace Notifon.Server.Business.Requests.TonClient;
+﻿namespace Notifon.Client.MessageSender;
 
-public class FreeTonSendMessageResult {
+internal class SendMessageResult {
     public bool Success { get; init; }
     public string[] Messages { get; init; }
     public string Error { get; init; }

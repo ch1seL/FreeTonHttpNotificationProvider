@@ -27,10 +27,6 @@ public static class ServiceCollectionExtensions {
                 x.AddRequestClient<DecryptEncryptedMessage>();
                 x.AddConsumer<FormatDecryptedMessageConsumer>();
                 x.AddRequestClient<FormatDecryptedMessage>();
-                x.AddConsumer<FreeTonSendMessageConsumer>();
-                x.AddRequestClient<FreeTonSendMessage>();
-                x.AddConsumer<FreeTonDeployConsumer>();
-                x.AddRequestClient<FreeTonDeploy>();
             })
             .AddMassTransit(x => {
                 x.AddDelayedMessageScheduler();

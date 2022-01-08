@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <ItemGroup>
+        <PackageReference Include="ch1seL.TonNet.Client.Web" Version="1.28.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.0" />
         <PackageReference Include="MudBlazor" Version="6.0.2" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
-        <PackageReference Include="NSwag.MSBuild" Version="13.14.7">
+        <PackageReference Include="NSwag.MSBuild" Version="13.15.5">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -14,6 +15,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Notifon.Client.Storage\Notifon.Client.Storage.csproj" />
+        <ProjectReference Include="..\Notifon.Server.Utils\Notifon.Server.Utils.csproj" />
     </ItemGroup>
 
     <!--    <PropertyGroup Condition="'$(Configuration)'=='Debug'">-->
@@ -22,7 +24,7 @@
 
     <Target Name="NSwag" BeforeTargets="BeforeBuild;BeforeRebuild" Condition="'$(Configuration)'=='Debug'">
         <PropertyGroup>
-            <NSwagCommand>$(NSwagExe_Net50) run</NSwagCommand>
+            <NSwagCommand>$(NSwagExe_Net60) run</NSwagCommand>
         </PropertyGroup>
         <Message Importance="High" Text="Run $(NSwagCommand)" />
         <Exec WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development" Command="$(NSwagCommand)" />

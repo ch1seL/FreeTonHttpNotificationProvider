@@ -22,8 +22,8 @@ public static class RiderRegistrationConfiguratorExtensions {
                                            saslConfigurator.Password = kafkaOptions.Password;
                                        }));
 
-            var groupId = ComposeGroupId(context);
-
+            var hostEnv = context.GetRequiredService<IHostEnvironment>();
+            var groupId = ComposeGroupId(hostEnv);
             kafkaConfigurator.TopicEndpoint<string, KafkaMessage>(kafkaOptions.Topic, groupId,
                                                                   e => {
                                                                       e.AutoOffsetReset = AutoOffsetReset.Earliest;
@@ -33,8 +33,7 @@ public static class RiderRegistrationConfiguratorExtensions {
         });
     }
 
-    private static string ComposeGroupId(IConfigurationServiceProvider context) {
-        var hostEnv = context.GetRequiredService<IHostEnvironment>();
+    private static string ComposeGroupId(IHostEnvironment hostEnv) {
         var groupIdBuilder = new StringBuilder(hostEnv.EnvironmentName.ToLower());
         if (hostEnv.IsDevelopment()) //use different group-id for different developers
         {

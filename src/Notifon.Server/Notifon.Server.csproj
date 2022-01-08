@@ -5,15 +5,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="ch1seL.TonNet.Client" Version="1.26.0" />
+        <PackageReference Include="ch1seL.TonNet.Client" Version="1.28.0.1" />
         <PackageReference Include="FirebaseAdmin" Version="2.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="NSwag.AspNetCore" Version="13.14.7" />
-        <PackageReference Include="NSwag.MSBuild" Version="13.14.7">
+        <PackageReference Include="NSwag.AspNetCore" Version="13.15.5" />
+        <PackageReference Include="NSwag.MSBuild" Version="13.15.5">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

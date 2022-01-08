@@ -1,8 +1,8 @@
 ﻿using ch1seL.TonNet.Client.Models;
 
-namespace Notifon.Server.Business.Requests.TonClient;
+namespace Notifon.Client.MessageSender;
 
-public class FreeTonDeployResult {
+internal class DeployResult {
     public bool Success { get; init; }
     public string Error { get; init; }
     public decimal Balance { get; set; }

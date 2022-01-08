@@ -1,5 +1,9 @@
 using System;
 using System.IO;
+using ch1seL.TonNet.Abstract;
+using ch1seL.TonNet.Adapter.Rust;
+using ch1seL.TonNet.Client;
+using ch1seL.TonNet.Client.PackageManager;
 using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
@@ -73,7 +77,10 @@ public class Startup {
         services.AddSingleton<IUserIdProvider, ByHashUserIdProvider>();
 
         // add free ton client 
-        services.AddTonClient();
+        services
+            .AddTransient<ITonClientAdapter, TonClientRustAdapter>()
+            .AddTransient<ITonClient, TonClient>()
+            .AddTransient<ITonPackageManager, FilePackageManager>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -100,7 +107,7 @@ public class Startup {
         app.UseSwaggerUi3();
 
         app.UseBlazorFrameworkFiles();
-        app.UseStaticFiles();
+        app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true, DefaultContentType = "text/plain" });
 
         app.UseRouting()
            .UseCors()
