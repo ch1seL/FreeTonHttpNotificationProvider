@@ -2,10 +2,10 @@ name: Main workflow
 
 on:
 #  pull_request:
-  push:
-    branches: [ main ]
-    paths-ignore:
-      - README.md
+#  push:
+#    branches: [ main ]
+#    paths-ignore:
+#      - README.md
 
 env:
   DOTNET_NOLOGO: true
