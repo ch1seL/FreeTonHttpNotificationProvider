@@ -2,7 +2,7 @@
 using System.Text;
 using Confluent.Kafka;
 using MassTransit;
-using MassTransit.Registration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Notifon.Server.Configuration.Options;
@@ -33,12 +33,12 @@ public static class RiderRegistrationConfiguratorExtensions {
         });
     }
 
-    private static string ComposeGroupId(IConfigurationServiceProvider context) {
+    private static string ComposeGroupId(IRiderRegistrationContext context) {
         var hostEnv = context.GetRequiredService<IHostEnvironment>();
         var groupIdBuilder = new StringBuilder(hostEnv.EnvironmentName.ToLower());
         if (hostEnv.IsDevelopment()) //use different group-id for different developers
         {
-            groupIdBuilder.AppendFormat("-{0}", Dns.GetHostName().ToLower());
+            groupIdBuilder.Append($"-{Dns.GetHostName().ToLower()}");
         }
         return groupIdBuilder.ToString();
     }

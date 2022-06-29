@@ -1,44 +1,42 @@
 ﻿using System;
 using System.Numerics;
 using System.Threading.Tasks;
-using ch1seL.TonNet.Abstract;
-using ch1seL.TonNet.Client.Models;
-using ch1seL.TonNet.Serialization;
+using EverscaleNet.Abstract;
+using EverscaleNet.Client.Models;
+using EverscaleNet.Serialization;
 using MassTransit;
 using Notifon.Server.Utils;
 
-namespace Notifon.Server.Business.Requests.TonClient;
+namespace Notifon.Server.Business.Requests.EverClient;
 
-public class FreeTonSendMessageConsumer : IConsumer<FreeTonSendMessage> {
+public class EverSendMessageConsumer : IConsumer<EverSendMessage> {
     private const string SafeMultisigWallet = "SafeMultisigWallet";
     private const string Transfer = "transfer";
-    private readonly IRequestClient<FreeTonDeploy> _freeTonDeployClient;
+    private readonly IRequestClient<EverDeploy> _everDeployClient;
+    private readonly IEverClient _everClient;
+    private readonly IEverPackageManager _everPackageManager;
 
-    private readonly ITonClient _tonClient;
-    private readonly ITonPackageManager _tonPackageManager;
-
-    public FreeTonSendMessageConsumer(ITonClient tonClient, ITonPackageManager tonPackageManager,
-                                      IRequestClient<FreeTonDeploy> freeTonDeployClient) {
-        _tonClient = tonClient;
-        _tonPackageManager = tonPackageManager;
-        _freeTonDeployClient = freeTonDeployClient;
+    public EverSendMessageConsumer(IEverClient everClient, IEverPackageManager everPackageManager, IRequestClient<EverDeploy> everDeployClient) {
+        _everClient = everClient;
+        _everPackageManager = everPackageManager;
+        _everDeployClient = everDeployClient;
     }
 
-    public async Task Consume(ConsumeContext<FreeTonSendMessage> context) {
+    public async Task Consume(ConsumeContext<EverSendMessage> context) {
         var cancellationToken = context.CancellationToken;
         var phrase = context.Message.Phrase;
         var recipient = context.Message.Recipient;
         var message = context.Message.Message;
 
-        var contract = await _tonPackageManager.LoadPackage(SafeMultisigWallet);
-        var transferAbi = await _tonPackageManager.LoadAbi(Transfer);
+        var contract = await _everPackageManager.LoadPackage(SafeMultisigWallet, cancellationToken);
+        var transferAbi = await _everPackageManager.LoadAbi(Transfer, cancellationToken);
 
-        var deployResult = await _freeTonDeployClient.GetResponse<FreeTonDeployResult>(new {
+        var deployResult = await _everDeployClient.GetResponse<EverDeployResult>(new {
             Phrase = phrase
         }, cancellationToken);
         var deployResultMessage = deployResult.Message;
         if (!deployResultMessage.Success) {
-            await context.RespondAsync(new FreeTonSendMessageResult {
+            await context.RespondAsync(new EverSendMessageResult {
                 Success = false,
                 Balance = deployResultMessage.Balance,
                 Error = deployResultMessage.Error,
@@ -50,7 +48,7 @@ public class FreeTonSendMessageConsumer : IConsumer<FreeTonSendMessage> {
         var keyPair = deployResultMessage.KeyPair;
 
         if (deployResultMessage.Balance <= (decimal)0.1) {
-            await context.RespondAsync(new FreeTonSendMessageResult {
+            await context.RespondAsync(new EverSendMessageResult {
                 Success = false,
                 Error = $"Balance of ${address} is too low for send message",
                 Balance = deployResultMessage.Balance,
@@ -58,7 +56,7 @@ public class FreeTonSendMessageConsumer : IConsumer<FreeTonSendMessage> {
             });
         }
 
-        var body = await _tonClient.Abi.EncodeMessageBody(new ParamsOfEncodeMessageBody {
+        var body = await _everClient.Abi.EncodeMessageBody(new ParamsOfEncodeMessageBody {
             Abi = transferAbi,
             CallSet = new CallSet {
                 FunctionName = "transfer",
@@ -68,7 +66,7 @@ public class FreeTonSendMessageConsumer : IConsumer<FreeTonSendMessage> {
             Signer = new Signer.None()
         }, cancellationToken);
 
-        var result = await _tonClient.Processing.ProcessMessage(new ParamsOfProcessMessage {
+        var result = await _everClient.Processing.ProcessMessage(new ParamsOfProcessMessage {
             SendEvents = false,
             MessageEncodeParams = new ParamsOfEncodeMessage {
                 Abi = contract.Abi,
@@ -87,7 +85,7 @@ public class FreeTonSendMessageConsumer : IConsumer<FreeTonSendMessage> {
             }
         }, cancellationToken: cancellationToken);
 
-        var accBalance = await _tonClient.Net.QueryCollection(new ParamsOfQueryCollection {
+        var accBalance = await _everClient.Net.QueryCollection(new ParamsOfQueryCollection {
             Collection = "accounts",
             Filter = new { id = new { eq = address } }.ToJsonElement(),
             Result = "balance"
@@ -95,7 +93,7 @@ public class FreeTonSendMessageConsumer : IConsumer<FreeTonSendMessage> {
 
         var balance = new BigInteger(Convert.ToUInt64(accBalance.Result[0].Get<string>("balance"), 16)).ToDecimalBalance();
 
-        await context.RespondAsync(new FreeTonSendMessageResult {
+        await context.RespondAsync(new EverSendMessageResult {
             Success = true,
             Balance = balance,
             Address = address,

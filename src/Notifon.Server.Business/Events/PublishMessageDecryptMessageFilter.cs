@@ -1,8 +1,7 @@
 ﻿using System.Threading.Tasks;
-using GreenPipes;
 using MassTransit;
 using Notifon.Server.Business.Models;
-using Notifon.Server.Business.Requests.TonClient;
+using Notifon.Server.Business.Requests.EverClient;
 using Notifon.Server.Models;
 
 namespace Notifon.Server.Business.Events;

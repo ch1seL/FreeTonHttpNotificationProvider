@@ -1,8 +1,8 @@
-﻿using ch1seL.TonNet.Client.Models;
+﻿using EverscaleNet.Client.Models;
 
-namespace Notifon.Server.Business.Requests.TonClient;
+namespace Notifon.Server.Business.Requests.EverClient;
 
-public class FreeTonDeployResult {
+public class EverDeployResult {
     public bool Success { get; init; }
     public string Error { get; init; }
     public decimal Balance { get; set; }

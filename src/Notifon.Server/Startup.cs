@@ -72,8 +72,8 @@ public class Startup {
         services.AddSignalR();
         services.AddSingleton<IUserIdProvider, ByHashUserIdProvider>();
 
-        // add free ton client 
-        services.AddTonClient();
+        // add ever client 
+        services.AddEverClient();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

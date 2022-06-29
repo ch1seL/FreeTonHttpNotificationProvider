@@ -9,5 +9,5 @@ public static class Sections {
     internal const string MailGun = "MailGun";
     internal const string RetryPolicy = "RetryPolicy";
     internal const string Telegram = "Telegram";
-    internal const string TonClientNetwork = "TonClientNetwork";
+    internal const string EverClientNetwork = "EverClientNetwork";
 }

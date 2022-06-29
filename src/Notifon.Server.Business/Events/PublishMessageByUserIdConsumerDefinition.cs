@@ -1,6 +1,4 @@
 ﻿using MassTransit;
-using MassTransit.ConsumeConfigurators;
-using MassTransit.Definition;
 
 namespace Notifon.Server.Business.Events;
 

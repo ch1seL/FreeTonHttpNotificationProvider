@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using GreenPipes;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Notifon.Server.Models;

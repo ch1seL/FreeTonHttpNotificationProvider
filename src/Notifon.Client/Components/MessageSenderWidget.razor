@@ -34,7 +34,7 @@
 @code {
 
     [Inject]
-    IApiFreeTonClient FreeTon { get; set; }
+    IApiEverClient ApiEverClient { get; set; }
 
     [Inject]
     ISnackbar Snackbar { get; set; }
@@ -83,7 +83,7 @@
             await SetFieldValue(PhraseField, phrase);
         }
 
-        var deployResult = await FreeTon.DeployAsync(new FreeTonDeploy { Phrase = phrase });
+        var deployResult = await ApiEverClient.DeployAsync(new EverDeploy { Phrase = phrase });
         if (!deployResult.Success) return deployResult.Error;
         AddressByPhrase = $"Your address: {deployResult.Address}";
         Balance = deployResult.Balance;
@@ -96,7 +96,7 @@
         await Form.Validate();
         if (Form.IsValid) {
             await SaveDataMethod();
-            var sendResult = await FreeTon.SendMessageAsync(new FreeTonSendMessage {
+            var sendResult = await ApiEverClient.SendMessageAsync(new EverSendMessage {
                 Message = MessageField.Value,
                 Phrase = PhraseField.Value,
                 Recipient = RecipientField.Value

@@ -1,9 +1,9 @@
-[![Chat on Telegram](https://img.shields.io/badge/chat-on%20telegram-9cf.svg)](https://t.me/ton_actions_chat)
-[<img src="https://avatars3.githubusercontent.com/u/67861283?s=150&u=4536b61595a1b422604fab8a7012092d891278f6&v=4" align="right" width="150">](https://freeton.org/)
+[![Chat on Telegram](https://img.shields.io/badge/chat-on%20telegram-9cf.svg)](https://t.me/everscale_actions_chat)
+<img src="https://avatars3.githubusercontent.com/u/67861283?s=150&u=4536b61595a1b422604fab8a7012092d891278f6&v=4" align="right" width="150">
 
-# TON Actions.Notifon
+# Everscale-Actions.Notifon
 
-Free TON Notification Provider
+Everscale Notification Provider
 
 ---
 
@@ -58,7 +58,7 @@ Kafka__Topic=YOUR_TOPIC
 > 💡 Uses an in-memory queue and Sqlite database. So the processing state is not saved on disk, and not committed Kafka messages can be processed repeatedly after restarting
 
 - Make sure that .Net 6.0 is installed (https://dotnet.microsoft.com/download)
-- Download or clone repo https://github.com/ton-actions/free-ton-http-notification-provider.git
+- Download or clone repo https://github.com/everscale-actions/free-ton-http-notification-provider.git
 - Go to the repository directory and create [minimal .env](#env) file
 - Exec `dotnet run --project .\src\Notifon.Server --urls=http://localhost:8080/`
 - Application will be started at http://localhost and DeBot endpoint is http://localhost/endpoint
@@ -70,7 +70,7 @@ Kafka__Topic=YOUR_TOPIC
 
 - Make sure that Docker Engine is installed and started (https://docs.docker.com/engine/install/)
 - Create [minimal .env](#env) file
-- Exec `docker run --rm --name notifon --env-file=.env -p 8080:80 ghcr.io/ton-actions/notifon:latest`
+- Exec `docker run --rm --name notifon --env-file=.env -p 8080:80 ghcr.io/everscale-actions/notifon:latest`
 
 ### Docker compose (Production-ready solution)
 
@@ -78,7 +78,7 @@ Kafka__Topic=YOUR_TOPIC
 
 - Create some directory for project
 - Download
-  [docker-compose.yaml](https://raw.githubusercontent.com/ton-actions/free-ton-http-notification-provider/main/.docker-compose/docker-compose.yaml)
+  [docker-compose.yaml](https://raw.githubusercontent.com/everscale-actions/free-ton-http-notification-provider/main/.docker-compose/docker-compose.yaml)
 - Create [minimal .env](#env) file
 - Exec `docker-compose up -d`
 
@@ -95,7 +95,7 @@ with `RetryPolicyOptions__Count` and `RetryPolicyOptions__Interval` variables.
 ### Scaling
 
 Notifon is a scalable application and can be run on as many replicas as you like.
-See [docker-compose.cluster.yaml](https://raw.githubusercontent.com/ton-actions/free-ton-http-notification-provider/main/.docker-compose/docker-compose.cluster.yaml)
+See [docker-compose.cluster.yaml](https://raw.githubusercontent.com/everscale-actions/free-ton-http-notification-provider/main/.docker-compose/docker-compose.cluster.yaml)
 and try clustered instance `docker-compose -f docker-compose.yaml -f docker-compose.cluster.yaml up -d`
 
 ### Endpoint configuration
@@ -107,7 +107,7 @@ If no tokens were provided at all, then messages will not be delivered.
 
 ### Environment variables
 
-|                Variable               |                     Description                    |                                  Default                                 |
+| Variable                              | Description                                        | Default                                                                  |
 |:--------------------------------------|:---------------------------------------------------|:-------------------------------------------------------------------------|
 | ASPNETCORE_ENVIRONMENT                | Set logging levels and etc.(Staging, Production)   | Development                                                              |
 | COMING_SOON                           | Disable accepting DeBot command                    | false                                                                    |
@@ -115,7 +115,7 @@ If no tokens were provided at all, then messages will not be delivered.
 | App__Url                              | App Url                                            | https://notify-contest.ddns.net/                                         |
 | App__Github                           | Github repository link                             | https://github.com/..                                                    |
 | App__Telegram                         | Telegram support link                              | https://t.me/ton_actions_chat                                            |
-| App__ServicePurpose                   | Main page title                                    | Free TON Notification Provider                                           |
+| App__ServicePurpose                   | Main page title                                    | Everscale Notification Provider                                          |
 | App__ServiceDescription               | More service description for main page             | Catching messages from the blockchain and send them to various endpoints |
 | App__NotificationDeBot                | Surf Notification DeBot address                    | https://web.ton.surf/debot?address=0%3A43..3ae3&net=devnet               |
 | Kafka__Host                           | Required!!! Kafka host or ip ask TonLabs           | not set                                                                  |
@@ -135,18 +135,18 @@ If no tokens were provided at all, then messages will not be delivered.
 | RetryPolicy__Count                    | Retry count (0-no retries)                         | 144                                                                      |
 | RetryPolicy__Interval                 | Retry interval (TimeSpan format)                   | 00:10:00                                                                 |
 | Sentry__Dsn                           | Sentry Dsn (see: sentry.io)                        | not set                                                                  |
-| TonClientNetwork__Endpoints__0        | Use for message decription and sending             | not set (main network entripoints)                                       |
-| TonClientNetwork__Endpoints__1        | Set free ton network endpoints                     | not set                                                                  |
-| TonClientNetwork__Endpoints__N        | Incriminate number to add another endpoints        | not set                                                                  |
-| TonClientNetwork__MessageRetriesCount | The number of automatic message processing retries | not set                                                                  |
-| TonClientNetwork__MessageRetriesCount | The number of automatic message processing retries | not set                                                                  |
+| EverClientNetwork__Endpoints__0       | Use for message decription and sending             | not set (main network entripoints)                                       |
+| EverClientNetwork__Endpoints__1        | Set Everscale Network endpoints                    | not set                                                                  |
+| EverClientNetwork__Endpoints__N        | Incriminate number to add another endpoints        | not set                                                                  |
+| EverClientNetwork__MessageRetriesCount | The number of automatic message processing retries | not set                                                                  |
+| EverClientNetwork__MessageRetriesCount | The number of automatic message processing retries | not set                                                                  |
 
 ## Firebase Cloud Messaging configure
 
 See docs https://firebase.google.com/docs/cloud-messaging?hl=en&authuser=0
 
 Just get keys and config and mount them into the docker container or place in src/Notifon.Server folder. Mounting example
-in [docker-compose.cluster.yaml](https://raw.githubusercontent.com/ton-actions/free-ton-http-notification-provider/main/.docker-compose/docker-compose.cluster.yaml)
+in [docker-compose.cluster.yaml](https://raw.githubusercontent.com/everscale-actions/free-ton-http-notification-provider/main/.docker-compose/docker-compose.cluster.yaml)
 
 ### Keys file
 
@@ -207,7 +207,7 @@ Create and mount file with your app config and vapidKey `firebase-config.json`:
 
 There is an application architectural diagram:
 
-![alt text](https://github.com/ton-actions/free-ton-http-notification-provider/blob/main/docs/Notifon%20Application%20Architectural%20Diagram.drawio.png?raw=true)
+![alt text](https://github.com/everscale-actions/free-ton-http-notification-provider/blob/main/docs/Notifon%20Application%20Architectural%20Diagram.drawio.png?raw=true)
 
 ---
 

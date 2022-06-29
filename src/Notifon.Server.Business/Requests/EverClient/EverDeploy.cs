@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Notifon.Server.Business.Requests.TonClient;
+namespace Notifon.Server.Business.Requests.EverClient;
 
-public class FreeTonDeploy {
+public class EverDeploy {
     [Required]
     public string Phrase { get; init; }
 }

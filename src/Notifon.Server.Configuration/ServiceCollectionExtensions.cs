@@ -1,6 +1,6 @@
 ﻿using System;
-using ch1seL.TonNet.Client;
-using ch1seL.TonNet.Client.Models;
+using EverscaleNet.Client.Models;
+using EverscaleNet.Models;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,8 +20,7 @@ public static class ServiceCollectionExtensions {
             .Configure<TelegramOptions>(configuration.GetSection(Sections.Telegram))
             .Configure<MailGunOptions>(configuration.GetSection(Sections.MailGun))
             .Configure<RetryPolicyOptions>(configuration.GetSection(Sections.RetryPolicy))
-            .Configure<TonClientOptions>(options =>
-                                             options.Network = configuration.GetSection(Sections.TonClientNetwork).Get<NetworkConfig>())
+            .Configure<EverClientOptions>(options => options.Network = configuration.GetSection(Sections.EverClientNetwork).Get<NetworkConfig>())
             .Configure<HealthCheckPublisherOptions>(options => {
                 options.Delay = TimeSpan.FromSeconds(2);
                 options.Predicate = check => check.Tags.Contains("ready");

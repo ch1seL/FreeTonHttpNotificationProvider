@@ -1,14 +1,12 @@
-﻿using MassTransit;
-using MassTransit.PrometheusIntegration;
-using MassTransit.RabbitMqTransport;
-using MassTransit.Registration;
+﻿using System;
+using MassTransit;
 using MassTransit.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Notifon.Server.Business.Events;
 using Notifon.Server.Business.Requests.Api;
 using Notifon.Server.Business.Requests.Endpoint;
-using Notifon.Server.Business.Requests.TonClient;
+using Notifon.Server.Business.Requests.EverClient;
 using Notifon.Server.Configuration.Options;
 using Notifon.Server.Kafka;
 using Notifon.Server.SignalR;
@@ -27,10 +25,10 @@ public static class ServiceCollectionExtensions {
                 x.AddRequestClient<DecryptEncryptedMessage>();
                 x.AddConsumer<FormatDecryptedMessageConsumer>();
                 x.AddRequestClient<FormatDecryptedMessage>();
-                x.AddConsumer<FreeTonSendMessageConsumer>();
-                x.AddRequestClient<FreeTonSendMessage>();
-                x.AddConsumer<FreeTonDeployConsumer>();
-                x.AddRequestClient<FreeTonDeploy>();
+                x.AddConsumer<EverSendMessageConsumer>();
+                x.AddRequestClient<EverSendMessage>();
+                x.AddConsumer<EverDeployConsumer>();
+                x.AddRequestClient<EverDeploy>();
             })
             .AddMassTransit(x => {
                 x.AddDelayedMessageScheduler();
@@ -56,22 +54,20 @@ public static class ServiceCollectionExtensions {
                         cfg.ConfigureEndpoints(context);
                     });
                 }
-            })
-            .AddMassTransitHostedService();
+            });
 
         return services;
     }
 
-    private static void ConfigureContext(IBusFactoryConfigurator cfg, IConfigurationServiceProvider context) {
+    private static void ConfigureContext(IBusFactoryConfigurator cfg, IServiceProvider provider) {
         cfg.UseDelayedMessageScheduler();
-        cfg.UsePublishFilter(typeof(PublishMessageDecryptMessageFilter<>), context);
-        cfg.UsePublishFilter(typeof(PublishMessageLoggingFilter<>), context);
+        cfg.UsePublishFilter(typeof(PublishMessageDecryptMessageFilter<>), provider);
+        cfg.UsePublishFilter(typeof(PublishMessageLoggingFilter<>), provider);
         cfg.UsePrometheusMetrics();
     }
 
-    private static void SetupRabbitMqHost(IRabbitMqBusFactoryConfigurator cfg,
-                                          IConfigurationServiceProvider context) {
-        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+    private static void SetupRabbitMqHost(IRabbitMqBusFactoryConfigurator cfg, IServiceProvider provider) {
+        var options = provider.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
         cfg.Host(options.Host, r => {
             r.Username(options.Username);
             r.Password(options.Password);

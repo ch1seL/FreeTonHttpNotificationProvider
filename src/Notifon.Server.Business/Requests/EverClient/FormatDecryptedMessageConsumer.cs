@@ -1,26 +1,26 @@
 ﻿using System;
 using System.Text.Json;
 using System.Threading.Tasks;
-using ch1seL.TonNet.Abstract;
-using ch1seL.TonNet.Client;
-using ch1seL.TonNet.Client.Models;
-using ch1seL.TonNet.Serialization;
+using EverscaleNet.Abstract;
+using EverscaleNet.Client.Models;
+using EverscaleNet.Models;
+using EverscaleNet.Serialization;
 using MassTransit;
 using Notifon.Server.Business.Models;
 using Notifon.Server.Utils;
 
-namespace Notifon.Server.Business.Requests.TonClient;
+namespace Notifon.Server.Business.Requests.EverClient;
 
 public class FormatDecryptedMessageConsumer : IConsumer<FormatDecryptedMessage> {
     private const string TransferContract = "transfer";
     private const string SafeMultisigWalletContract = "SafeMultisigWallet";
     private const string EmptyBody = "te6ccgEBAQEAAgAAAA==";
-    private readonly ITonClient _tonClient;
-    private readonly ITonPackageManager _tonPackageManager;
+    private readonly IEverClient _everClient;
+    private readonly IEverPackageManager _everPackageManager;
 
-    public FormatDecryptedMessageConsumer(ITonClient tonClient, ITonPackageManager tonPackageManager) {
-        _tonClient = tonClient;
-        _tonPackageManager = tonPackageManager;
+    public FormatDecryptedMessageConsumer(IEverClient everClient, IEverPackageManager everPackageManager) {
+        _everClient = everClient;
+        _everPackageManager = everPackageManager;
     }
 
     public async Task Consume(ConsumeContext<FormatDecryptedMessage> context) {
@@ -33,8 +33,8 @@ public class FormatDecryptedMessageConsumer : IConsumer<FormatDecryptedMessage> 
             var isInternal = msg.Get<int>("msg_type") == 0;
 
             var abi = isInternal
-                          ? await _tonPackageManager.LoadAbi(TransferContract)
-                          : await _tonPackageManager.LoadAbi(SafeMultisigWalletContract);
+                          ? await _everPackageManager.LoadAbi(TransferContract, cancellationToken)
+                          : await _everPackageManager.LoadAbi(SafeMultisigWalletContract, cancellationToken);
 
             if (msg.TryGetProperty("body", out var bodyJson) && bodyJson.GetString() == EmptyBody) {
                 await context.RespondAsync<FormattedMessage>(new { Text = "<Empty comment>" });
@@ -42,7 +42,7 @@ public class FormatDecryptedMessageConsumer : IConsumer<FormatDecryptedMessage> 
             }
 
             try {
-                var messageBody = await _tonClient.Abi.DecodeMessage(new ParamsOfDecodeMessage {
+                var messageBody = await _everClient.Abi.DecodeMessage(new ParamsOfDecodeMessage {
                     Abi = abi,
                     Message = msg.Get<string>("boc")
                 }, cancellationToken);
@@ -55,7 +55,7 @@ public class FormatDecryptedMessageConsumer : IConsumer<FormatDecryptedMessage> 
 
                 await context.RespondAsync<FormattedMessage>(new { Text = text });
                 return;
-            } catch (TonClientException ex) when (ex.Code == (int)AbiErrorCode.InvalidMessage) { }
+            } catch (EverClientException ex) when (ex.Code == (int)AbiErrorCode.InvalidMessage) { }
         }
 
         await context.RespondAsync<DummyResponse>(new { });

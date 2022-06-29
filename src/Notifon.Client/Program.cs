@@ -20,7 +20,7 @@ public class Program {
         builder.Services
                .AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) })
                .AddTransient<IApiStatusClient, ApiStatusClient>()
-               .AddTransient<IApiFreeTonClient, ApiFreeTonClient>()
+               .AddTransient<IApiEverClient, ApiEverClient>()
                .AddScoped<AppConfigProvider>();
 
         builder.Services
